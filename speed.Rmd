@@ -1,0 +1,93 @@
+---
+title: "Pi-visualisation - the need for speed"
+output: html_notebook
+---
+
+I recreated a really cool visualization of the digits of Pi. It was originally made by the talented Nadieh Bremer. Her original creation can be found here: https://www.visualcinnamon.com/portfolio/the-art-in-pi. Do yourself a favor, and take a look the rest of her creations. They are pretty damn awesome!
+
+The idea was to recreate the visualization. We would like to use it at a presentation, and though it is great to show a cool graphic, it is even better to understand how it is made. It is also a good exercise. How to recreate this? Can I do it? 
+What you should do is to recreate the graphic without looking at the original code. You wont learn anything by just copying it, the learning happens when you figure stuff out for yourself. 
+And sometimes you really get lucky. You figure out a better way to do it. It's not nice to gloat, so I am not claiming that I am a better R-programmer than Nadieh. I'm pretty sure I'm not. But every dog gets its day, and this was mine!
+
+You can read about the general concept here: . The point is that I figured out a faster way to calculate the individual points in the plot. Not that it makes a real difference, it is only 1,8 seconds faster, and you only really have to do it once.
+To paraphrase a wise man: Don't blink. Don't even blink. Blink, and you will miss it.
+Anyway. I have a small ambition to try to do it with even more digits of pi. And then it will make a difference. 
+Also, I got a good question. How does it scale?
+Lets find out.
+
+How fast do the two different ways of doing the calculations, do it with different numbers of digits? Basically I'll want to plot the speed as a function of the number of digits the two approaches have to handle.
+
+We're gonna need several different vectors of varying lenghts. I'll use sample() to generate them:
+```{r, eval=FALSE}
+iterations <- c(10,100,500,1000,5000,10000,50000,100000,500000,1000000)
+for(i in iterations){
+  numbers <- sample(0:9,i,replace=TRUE)
+}
+```
+
+df <- data.frame("i"=numeric(),"new"=numeric(),"orig"=numeric())
+
+I'll prepare a dataframe to hold the results:
+```{r}
+df <- data.frame("iterations"=numeric(), "method"=character(), "time"=numeric())
+```
+
+I'm going to use microbenchmark to measure the speed. And I am lazy, so I'll just save the median time.
+
+
+
+
+```{r}
+library(microbenchmark)
+mbm <- microbenchmark({
+x <- cos(5/2*pi - numvec/5*pi)
+y <- sin(5/2*pi - numvec/5*pi)
+x <- cumsum(x)
+y <- cumsum(y)
+x <- c(0,x)
+y <- c(0,y)
+},{
+x <- y <- rep(NULL, length(numvec))
+x[1] <- 0
+y[1] <- 0
+for (i in 2:length(numvec)){
+    x[i] <- x[(i-1)] + sin((pi*2)*(numvec[i]/10))
+    y[i] <- y[(i-1)] + cos((pi*2)*(numvec[i]/10))  
+}
+}, times=3
+
+)
+levels(mbm$expr) <- c("My way", "Original way")
+mbm
+
+```
+
+
+library(microbenchmark)
+testnumvec <- read_file("pi_dec_1m.txt")
+numbers <- gsub("[[:punct:]]", "", testnumvec)
+  numbers <- as.integer(unlist(strsplit(numbers,"")))  
+numvec <- numbers
+mbm <- microbenchmark({
+x <- cos(5/2*pi - numvec/5*pi)
+y <- sin(5/2*pi - numvec/5*pi)
+x <- cumsum(x)
+y <- cumsum(y)
+x <- c(0,x)
+y <- c(0,y)
+},{
+x <- y <- rep(NULL, length(numvec))
+x[1] <- 0
+y[1] <- 0
+for (i in 2:length(numvec)){
+    x[i] <- x[(i-1)] + sin((pi*2)*(numvec[i]/10))
+    y[i] <- y[(i-1)] + cos((pi*2)*(numvec[i]/10))  
+}
+}, times=3
+
+)
+levels(mbm$expr) <- c("My way", "Original way")
+mbm
+
+autoplot(mbm)
+
