@@ -1,22 +1,49 @@
-number <- "31415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679"
-numbervek <- as.integer(unlist(strsplit(number,"")))
-length(numbervek)
+#install.packages("bigmemory")
+library(bigmemory)
 
-x <- cos(5/2*pi - numbervek/5*pi)
-y <- sin(5/2*pi - numbervek/5*pi)
+#install.packages("devtools")
+#library(devtools)
+#install_github("jayemerson/big.char")
+library(big.char)
 
-x <- cumsum(x)
-y <- cumsum(y)
-x <- c(0,x)
-y <- c(0,y)
-df <- data.frame(as.integer(c(0,numbervek)),x,y)
-colnames(df) <- c("num", "x", "y")
+# vi starter med at indlæse filen, og fjerne punktummet
+x <- read_file("Pi-Dec.txt")
+x <- gsub("[[:punct:]]", "", x)
 
-rainbowColDark <- c("#EFB605","#EB8612","#DD0030","#B3005A","#80348F","#3365AA","#07A071","#7EB852")
+# så vil vi godt have kørt det her:
+#z <- as.integer(unlist(strsplit(x,"")))  
 
-factor(df$num)
-library(ggplot2)
-ggplot(df, aes(x=x,y=y,group="1"))+
-  geom_path(colour=factor(df$num)) 
+# udfordringen er, at vi undervejs får lavet en vektor, der alt for stor.
 
-x[-1]
+x <- big.char(1,1000000000,backingfile = "biggie.bac", descriptorfile = "biggie.desc")
+
+library(readr)
+
+
+
+substr(x, 1, 20)
+
+y <- big.matrix(1000000000, 3, type='integer', init=0, backingfile = "bigpi.bac", descriptorfile = "bigpi.desc")
+colnames(y) = c("num", "x", "y")
+
+z <- big.char(1000000000,1,backingfile = "bigone.bac", descriptorfile = "bigone.desc")
+
+Square root of 2 (Sqrt(2)) 
+https://apod.nasa.gov/htmltest/gifcity/sqrt2.1mil
+
+
+* Square root of 3 (Sqrt(3))
+https://apod.nasa.gov/htmltest/gifcity/sqrt3.1mil
+
+* Golden ratio
+http://www.goldenratio.org/
+
+* e
+
+* Natural logarithm of 2 (Log(2))
+* Natural logarithm of 3 (Log(3))
+* Natural logarithm of 10 (Log(10))
+* Apéry's constant (Zeta(3))
+* Lemniscate constant (Lemniscate)
+* Catalan's constant (Catalan)
+* Euler-Mascheroni constant (Euler's Constant)
